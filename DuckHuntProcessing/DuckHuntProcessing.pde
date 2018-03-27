@@ -19,6 +19,7 @@ int score = 0;
 
 //le canard
 Duck duck1;
+Duck duck2;
 
 void setup() {
   //configuration de la zone d'affichage
@@ -35,6 +36,7 @@ void setup() {
   
   //initialisation du canard 
   duck1 = new Duck(widthGame, heightGame);
+  duck2 = new Duck(widthGame, heightGame);
 }
 
 
@@ -47,16 +49,21 @@ void draw() {
   
   //déplacement du canard
   duck1.move();
+  duck2.move();
   
   //tentative de tir sur le canard
   if (mousePressed) {
     if (duck1.shoot(mouseX, mouseY)) {
       score += 100;
     }
+    if (duck2.shoot(mouseX, mouseY)) {
+      score += 100;
+    }
   }
   
   //affichage du canard
   duck1.display();
+  duck2.display();
   
   //affichage du score
   text("Score : ", widthGame - 250, heightGame - 10);

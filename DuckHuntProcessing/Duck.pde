@@ -84,11 +84,11 @@ class Duck {
         duckSpriteCounter++;
         tint(255, (255-duckSpriteCounter * 10));
         
-        if ((duckY >= heightGame) || (duckSpriteCounter> 22)) {
+        if ((duckY >= heightGame) || (duckSpriteCounter> 24)) {
           dead = false;
           duckSpriteToUse = 1;
           duckSpriteCounter = 0;
-          tint(255, 255);
+          
           initDuckPosition();
         }
       }
@@ -100,15 +100,19 @@ class Duck {
       //vérification de l'affichge à
       switch (duckSpriteToUse) {
         case 1 : 
+          tint(255, 255);
           image(duck1, (duckX-duck1.width/2), (duckY-duck1.height/2));
           break;
         case 2 : 
+          tint(255, 255);
           image(duck2, (duckX-duck2.width/2), (duckY-duck2.height/2));
           break;
         case 3 : 
+          tint(255, 255);
           image(duck3, (duckX-duck3.width/2), (duckY-duck3.height/2));
           break;
         case 4 : 
+          tint(255, 255);
           image(duck4, (duckX-duck4.width/2), (duckY-duck4.height/2));
           //text(100, duckX + 40, duckY);
           break;
@@ -122,7 +126,6 @@ class Duck {
       //récupération de la position du canard
       duckInitialeY  = getRandomPosition()+25;
       duckFinaleY    = getRandomPosition()+25; 
-      
       positionDuck   = 0;
     }
     
