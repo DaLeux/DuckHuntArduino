@@ -52,7 +52,7 @@ class Duck {
   {
       if (!dead) {
         //incrémentation de la position du canard
-        positionDuck=positionDuck+0.005;
+        positionDuck=positionDuck+0.002;
           
         //calcul de la position du canard
         if (positionDuck < 1.0) {
@@ -133,8 +133,9 @@ class Duck {
       return (int) random(heightGame-50);
     }
 
-    public boolean shoot(int x, int y) {
-      if ((!dead) && (mouseX > (duckX- duck1.width/2)) &&  (mouseX <(duckX + duck1.width/2)) && (mouseY > (duckY - duck1.height/2)) && (mouseY < (duckY + duck1.height/2))) {
+    public boolean shoot(int curseurX, int curseurY) {
+      
+      if ((!dead) && (curseurX > (duckX- duck1.width/2)) &&  (curseurX <(duckX + duck1.width/2)) && (curseurY > (duckY - duck1.height/2)) && (curseurY < (duckY + duck1.height/2))) {
         initDuckPosition();
         dead = true;
         duckSpriteToUse = 4;

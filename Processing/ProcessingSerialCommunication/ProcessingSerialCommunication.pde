@@ -17,7 +17,10 @@ int receivedValue;     // Data received from the serial port
 
 void setup()
 {
-  String portName = Serial.list()[1]; //change the 0 to a 1 or 2 etc. to match your port
+  for (String deviceName: Serial.list()) {
+    println(deviceName);
+  }
+  String portName = Serial.list()[9]; //change the 0 to a 1 or 2 etc. to match your port
   serialPort = new Serial(this, portName, 9600);
 }
 
