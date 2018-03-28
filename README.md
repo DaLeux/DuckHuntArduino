@@ -1,6 +1,8 @@
 # DuckHuntArduino
 
-DuckHunter game running on processing (https://processing.org/) controlled with a wii nunchuk via an arduino.  
+DuckHunter game running on processing (https://processing.org/) controlled with a wii nunchuk via an arduino. 
+
+![alt text](http://url/to/img.png)
 
 ## Android  :
 
