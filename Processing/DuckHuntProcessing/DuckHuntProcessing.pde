@@ -29,9 +29,13 @@ Duck duck2;
 Nunchuck nunchuck;
 
 //communication serie
-Serial serialPort;    // Create object from Serial class
+Serial serialPort;
 String portName;
-  
+
+//information sur la lecture de l'intro
+boolean playIntro = true;
+int introTimerEnd;
+
 void setup() {
   //configuration de la zone d'affichage
   size(1000, 713);
@@ -50,54 +54,69 @@ void setup() {
   duck2 = new Duck(widthGame, heightGame);
   
   //récupération du port serial à utiliser
-  portName = Serial.list()[9];
-  println(portName);
+  this.portName = Serial.list()[9];
+  println(Serial.list());
+  
+  println("Port entrée utilisé (tty) : ", portName);
+  
   serialPort = new Serial(this, this.portName, 9600);
-    
+
   //initialisation du curseur et de sa position
   nunchuck = new Nunchuck(serialPort);
   initializeCursor();
+
+  introTimerEnd = millis()+2000;
 }
 
 
 void draw() {
+
+
   //affichage du fond d'écran
   background(bg);
   
-  //lecture du port serie
-  nunchuck.read();
-  
-  if (nunchuck.isReset()) {
-    initializeCursor();
-  }
+  if ((millis() < introTimerEnd) && (playIntro))  {
+    println("intro");
+
+
+  } else if (millis() >= introTimerEnd) {
+    //lecture du port serie
+    nunchuck.read();
     
-  curseurX += nunchuck.getX() * incrementX;
-  curseurY += -nunchuck.getY() * incrementY;
-  
-  //curseur
-  image(nunchuck.isShooted()?boum:curseur, (curseurX-curseur.width/2), (curseurY-curseur.height/2));
-  
-  //déplacement du canard
-  duck1.move();
-  duck2.move();
-  
-  //tentative de tir sur le canard
-  if (nunchuck.isShooted()) {
-    if (duck1.shoot(curseurX, curseurY)) {
-      score += 100;
+    if (nunchuck.isReset()) {
+      initializeCursor();
     }
-    if (duck2.shoot(curseurX, curseurY)) {
-      score += 50;
+      
+    curseurX += nunchuck.getX() * incrementX;
+    curseurY += -nunchuck.getY() * incrementY;
+    
+    //curseur
+    image(nunchuck.isShooted()?boum:curseur, (curseurX-curseur.width/2), (curseurY-curseur.height/2));
+    
+    //déplacement du canard
+    duck1.move();
+    duck2.move();
+    
+    //tentative de tir sur le canard
+    if (nunchuck.isShooted()) {
+      if (duck1.shoot(curseurX, curseurY)) {
+        score += 100;
+        serialPort.write(2);
+      }
+      if (duck2.shoot(curseurX, curseurY)) {
+        score += 50;
+        serialPort.write(2);
+      }
     }
+    
+    //affichage du canard
+    duck1.display();
+    duck2.display();
+    
+    //affichage du score
+    text("Score : ", widthGame - 250, heightGame - 10);
+    text(score, widthGame - 100, heightGame - 10);
   }
-  
-  //affichage du canard
-  duck1.display();
-  duck2.display();
-  
-  //affichage du score
-  text("Score : ", widthGame - 250, heightGame - 10);
-  text(score, widthGame - 100, heightGame - 10);
 }
 
 void initializeCursor() {

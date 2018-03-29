@@ -13,6 +13,98 @@
 
 #define BAUDRATE 9600
 
+int buzzer = 3;
+
+//notes
+int e0  = 330;
+int e1  = 349;
+int e2  = 370;
+int e3  = 392;
+int e4  = 415;
+int e5  = 440;
+int e6  = 466;
+int e7  = 494;
+int e8  = 523;
+int e9  = 554;
+int e10 = 587;
+
+int b0  = 247;
+int b1  = 262;
+int b2  = 277;
+int b3  = 294;
+int b4  = 311;
+int b5  = 330;
+int b6  = 349;
+int b7  = 370;
+int b8  = 392;
+int b9  = 415;
+int b10 = 440;
+
+int g0  = 196;
+int g1  = 208;
+int g2  = 220;
+int g3  = 233;
+int g4  = 247;
+int g5  = 262;
+int g6  = 277;
+int g7  = 294;
+int g8  = 311;
+int g9  = 330;
+int g10 = 349;
+
+int d0  = 147;
+int d1  = 156;
+int d2  = 165;
+int d3  = 175;
+int d4  = 185;
+int d5  = 196;
+int d6  = 208;
+int d7  = 220;
+int d8  = 233;
+int d9  = 247;
+int d10 = 262;
+
+int a0  = 110;
+int a1  = 117;
+int a2  = 123;
+int a3  = 131;
+int a4  = 139;
+int a5  = 147;
+int a6  = 156;
+int a7  = 165;
+int a8  = 175;
+int a9  = 185;
+int a10 = 196;
+
+int E0  = 82;
+int E1  = 87;
+int E2  = 92;
+int E3  = 98;
+int E4  = 104;
+int E5  = 110;
+int E6  = 117;
+int E7  = 123;
+int E8  = 131;
+int E9  = 139;
+int E10 = 147;
+
+int eighth  = 50;
+int quarter = 100;
+int half    = 200;
+int whole   = 400;
+
+int introSong[]     = {e4,      e4,       e3,       e2,     e1,     b5,     b6  };
+int introDuration[] = {quarter, quarter,  quarter,  half,   quarter, whole, half };
+
+int fallSong[]     = {e10,      e9,       e8,       e7,     e6,     e5, e1};
+
+int shootSong[]     = {E0, a0, d0, g0, b0, e0};
+
+boolean playIntro = false;
+boolean playFall = false;
+boolean playShoot = false;
+
+
 const int RESET_BUTTON = 0;
 const int UP = 1;
 const int UP_RIGHT = 2;
@@ -37,31 +129,94 @@ const int LEFT_ANGLE_NEGATIVE = -180;
 
 const int ANGLE_PERIMETER = 20;
 
+int buttonPin = 2;
+int lastButtonState = 0;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+bool panic = false;
+int buttonState;
+
 ArduinoNunchuk nunchuk = ArduinoNunchuk();
 
 void setup()
 {
   Serial.begin(BAUDRATE);
   nunchuk.init();
+  pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void loop()
-{
+{  
+  //mise à jour des données en provenance du nunchuck
   nunchuk.update();
 
-  sendNunchukDirection();
+  int reading = digitalRead(buttonPin)?false:true;
 
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
+  }
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      if (buttonState == HIGH) {
+
+        panic = !panic;
+      }
+    }
+  }
+  lastButtonState = reading;
+
+  sendNunchukDirection(panic);
   sendNunchukButton();
 
   readIncommingData();
-  
-  //logData();
+  sound();
 }
 
-void readIncommingData(){
-  if(Serial.available()){
 
+
+void sound() {
+  if (playIntro) {
+    for (int i = 0; i < sizeof(introSong); i++) {
+      tone(buzzer, introSong[i], introDuration[i]);
+      delay(introDuration[i]*1.1);
+    }
+    tone(buzzer, 0, 10);
+    playIntro = false;
+  }
+  
+  if (playFall) {
+    for (int i = 0; i < sizeof(fallSong); i++) {
+      tone(buzzer, fallSong[i], 30);
+      delay(30);
+    }
+    tone(buzzer, 0, 10);
+    playFall = false;
+  }
+  
+  if (playShoot) {
+    for (int i = 0; i < sizeof(shootSong); i++) {
+      tone(buzzer, shootSong[i], 10);
+      delay(10);
+    }
+    playShoot = false;
+  }
+
+  if ((!playFall) && (!playIntro) && (!playShoot)) {
+    tone(buzzer, 0, 1);
+    delay(1);
+  }
+}
+
+void readIncommingData()
+{
+  if(Serial.available()){
     int receivedValue = Serial.read();
+    if (receivedValue == 1) {
+      playIntro = true;
+    } else if (receivedValue == 2)  {
+      playFall = true;
+    }
     
   }
 }
@@ -69,6 +224,7 @@ void readIncommingData(){
 void sendNunchukButton() {
   if(nunchuk.zButton == 1) {
     Serial.print(SHOT_BUTTON);
+    playShoot = true;
   }
 
   if(nunchuk.cButton == 1) {
@@ -76,7 +232,7 @@ void sendNunchukButton() {
   }
 }
 
-void sendNunchukDirection() { 
+void sendNunchukDirection(boolean panic) { 
 
   int analogX = nunchuk.analogX;
   int analogY = nunchuk.analogY;
@@ -92,42 +248,42 @@ void sendNunchukDirection() {
 
     // UP
     if(isUpPosition(angle)){
-      Serial.print(UP);
+      Serial.print((!panic)?UP:DOWN);
     }
 
     // UP RIGHT
     else if(isUpRightPosition(angle)){
-      Serial.print(UP_RIGHT);
+      Serial.print((!panic)?UP_RIGHT:DOWN_LEFT);
     }
 
     // RIGHT
     else if(isRightPosition(angle)){
-      Serial.print(RIGHT);
+      Serial.print((!panic)?RIGHT:LEFT);
     }
 
     // DOWN RIGHT
     else if(isDownRightPosition(angle)){
-      Serial.print(DOWN_RIGHT);
+      Serial.print((!panic)?DOWN_RIGHT:UP_LEFT);
     }
 
     // DOWN
     else if(isDownPosition(angle)){
-      Serial.print(DOWN);
+      Serial.print((!panic)?DOWN:UP);
     }
 
     // DOWN LEFT
     else if(isDownLeftPosition(angle)){
-      Serial.print(DOWN_LEFT);
+      Serial.print((!panic)?DOWN_LEFT:UP_RIGHT);
     }
 
     // UP LEFT
     else if(isUpLeftPosition(angle)){
-      Serial.print(UP_LEFT);
+      Serial.print((!panic)?UP_LEFT:DOWN_RIGHT);
     }
     
     // LEFT
     else if(isLeftPosition(angle)){
-      Serial.print(LEFT);
+      Serial.print((!panic)?LEFT:RIGHT);
     }
 
   }

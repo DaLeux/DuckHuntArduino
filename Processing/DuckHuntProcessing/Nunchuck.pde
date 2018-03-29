@@ -35,10 +35,12 @@ class Nunchuck
     this.positionX = 0;
     this.positionY = 0;
     
-    if ( serialPort.available() <= 0)
+    if ( this.serialPort.available() <= 0) {
+      println("Erreur port serie");
       return;
+    } 
 
-    switch(serialPort.read() - CHAR_ZERO){
+    switch(this.serialPort.read() - CHAR_ZERO){
         case RESET_BUTTON:
           reset = true;
           break;
@@ -80,17 +82,17 @@ class Nunchuck
   }
   
   public int getX() {
-    return positionX;
+    return this.positionX;
   }
   public int getY() {
-    return positionY;
+    return this.positionY;
   }
   public boolean isShooted() {
-    return shoot;
+    return this.shoot;
   }
   
   public boolean isReset() {
-    return reset;
+    return this.reset;
   }
   
 }
