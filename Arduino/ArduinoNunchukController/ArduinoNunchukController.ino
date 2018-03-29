@@ -1,5 +1,3 @@
-
-
 /*
  * ArduinoNunchukController.ino
  *
@@ -54,8 +52,18 @@ void loop()
   sendNunchukDirection();
 
   sendNunchukButton();
+
+  readIncommingData();
   
   //logData();
+}
+
+void readIncommingData(){
+  if(Serial.available()){
+
+    int receivedValue = Serial.read();
+    
+  }
 }
 
 void sendNunchukButton() {
