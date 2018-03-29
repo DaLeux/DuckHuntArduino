@@ -51,6 +51,7 @@ void setup() {
   
   //récupération du port serial à utiliser
   portName = Serial.list()[9];
+  println(portName);
   serialPort = new Serial(this, this.portName, 9600);
     
   //initialisation du curseur et de sa position
@@ -60,9 +61,6 @@ void setup() {
 
 
 void draw() {
-  
-  serialPort.write("b");
-  
   //affichage du fond d'écran
   background(bg);
   
@@ -87,11 +85,9 @@ void draw() {
   if (nunchuck.isShooted()) {
     if (duck1.shoot(curseurX, curseurY)) {
       score += 100;
-      serialPort.write("s");
     }
     if (duck2.shoot(curseurX, curseurY)) {
       score += 50;
-      serialPort.write("s");
     }
   }
   
