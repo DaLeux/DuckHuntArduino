@@ -1,16 +1,17 @@
 
 
 /*
- * ArduinoNunchukDemo.ino
+ * ArduinoNunchukController.ino
  *
- * Copyright 2011-2013 Gabriel Bianconi, http://www.gabrielbianconi.com/
+ * Authors : Asif ADAMSHA, Fabien GRISELLES, Thomas LEUX
  *
- * Project URL: http://www.gabrielbianconi.com/projects/arduinonunchuk/
+ * Project page: https://github.com/DaLeux/DuckHuntArduino
  *
  */
 
 #include <Wire.h>
 #include <ArduinoNunchuk.h>
+#include <math.h> 
 
 #define BAUDRATE 9600
 
@@ -25,6 +26,18 @@ const int LEFT = 7;
 const int UP_LEFT = 8;
 const int SHOT_BUTTON = 9;
 
+const int NEUTRAL_NUNCHUK_X = 122;
+const int NEUTRAL_NUNCHUK_Y = 127;
+
+const int MIN_DETECTION_RANGE = 10;
+
+const int UP_ANGLE = 90;
+const int RIGHT_ANGLE = 0;
+const int DOWN_ANGLE = -90;
+const int LEFT_ANGLE_POSTIVE = 180;
+const int LEFT_ANGLE_NEGATIVE = -180;
+
+const int ANGLE_PERIMETER = 20;
 
 ArduinoNunchuk nunchuk = ArduinoNunchuk();
 
@@ -41,9 +54,8 @@ void loop()
   sendNunchukDirection();
 
   sendNunchukButton();
+  
   //logData();
-
-  //delay(0);
 }
 
 void sendNunchukButton() {
@@ -56,53 +68,102 @@ void sendNunchukButton() {
   }
 }
 
-void sendNunchukDirection() {
-
-  // Zero value - X : 121, Y : 127 
+void sendNunchukDirection() { 
 
   int analogX = nunchuk.analogX;
   int analogY = nunchuk.analogY;
 
-  // UP
-  if(analogX >= 110 &&  analogY >= 215){
-    Serial.print(UP);
-  }
+  int deltaX = analogX - NEUTRAL_NUNCHUK_X;
+  int deltaY = analogY - NEUTRAL_NUNCHUK_Y;
+  
+  int distance = getDistance(deltaX, deltaY);
 
-  // UP RIGHT
-  else if(analogX >= 180 &&  analogY >= 190){
-    Serial.print(UP_RIGHT);
-  }
+  if(distance > MIN_DETECTION_RANGE){
 
-  // RIGHT
-  else if(analogX >= 200 &&  analogY >= 127){
-    Serial.print(RIGHT);
-  }
+    double angle = getAngle(deltaX, deltaY);
 
-  // DOWN RIGHT
-  else if(analogX >= 180 &&  analogY <= 80){
-    Serial.print(DOWN_RIGHT);
-  }
+    // UP
+    if(isUpPosition(angle)){
+      Serial.print(UP);
+    }
 
-  // DOWN
-  else if(analogX <= 122 &&  analogY <= 40){
-    Serial.print(DOWN);
-  }
+    // UP RIGHT
+    else if(isUpRightPosition(angle)){
+      Serial.print(UP_RIGHT);
+    }
 
-  // DOWN LEFT
-  else if(analogX <= 70 &&  analogY <= 70){
-    Serial.print(DOWN_LEFT);
-  }
+    // RIGHT
+    else if(isRightPosition(angle)){
+      Serial.print(RIGHT);
+    }
 
-  // LEFT
-  else if(analogX <= 50 &&  analogY <= 127){
-    Serial.print(LEFT);
+    // DOWN RIGHT
+    else if(isDownRightPosition(angle)){
+      Serial.print(DOWN_RIGHT);
+    }
+
+    // DOWN
+    else if(isDownPosition(angle)){
+      Serial.print(DOWN);
+    }
+
+    // DOWN LEFT
+    else if(isDownLeftPosition(angle)){
+      Serial.print(DOWN_LEFT);
+    }
+
+    // UP LEFT
+    else if(isUpLeftPosition(angle)){
+      Serial.print(UP_LEFT);
+    }
+    
+    // LEFT
+    else if(isLeftPosition(angle)){
+      Serial.print(LEFT);
+    }
+
   }
   
-  // UP LEFT
-  else if(analogX <= 60 &&  analogY >= 190){
-    Serial.print(UP_LEFT);
-  }
-  
+}
+
+double getDistance(int deltaX, int deltaY){
+  return pow(square(deltaX) + square(deltaY), 0.5);
+}
+
+double getAngle(int deltaX, int deltaY){
+  return atan2(deltaY,deltaX) * 180 / PI;
+}
+
+boolean isUpPosition(double angle){
+  return (angle <= UP_ANGLE + ANGLE_PERIMETER) && (angle >= UP_ANGLE - ANGLE_PERIMETER);
+}
+
+boolean isUpRightPosition(double angle){
+  return (angle <= UP_ANGLE - ANGLE_PERIMETER) && (angle >= RIGHT_ANGLE + ANGLE_PERIMETER);
+}
+
+boolean isRightPosition(double angle){
+  return (angle <= RIGHT_ANGLE + ANGLE_PERIMETER) && (angle >= RIGHT_ANGLE - ANGLE_PERIMETER);
+}
+
+boolean isDownRightPosition(double angle){
+  return (angle <= RIGHT_ANGLE - ANGLE_PERIMETER) && (angle >= DOWN_ANGLE + ANGLE_PERIMETER);
+}
+
+boolean isDownPosition(double angle){
+  return (angle <= DOWN_ANGLE + ANGLE_PERIMETER) && (angle >= DOWN_ANGLE - ANGLE_PERIMETER);
+}
+
+boolean isDownLeftPosition(double angle){
+  return (angle <= DOWN_ANGLE - ANGLE_PERIMETER) && (angle >= LEFT_ANGLE_NEGATIVE + ANGLE_PERIMETER);
+}
+
+boolean isLeftPosition(double angle){
+  return (angle <= LEFT_ANGLE_POSTIVE + ANGLE_PERIMETER) && (angle >= LEFT_ANGLE_NEGATIVE - ANGLE_PERIMETER);
+}
+
+boolean isUpLeftPosition(double angle){
+  return (angle <= LEFT_ANGLE_POSTIVE - ANGLE_PERIMETER) && (angle >= UP_ANGLE + ANGLE_PERIMETER);
 }
 
 void logData() {
