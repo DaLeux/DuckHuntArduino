@@ -1,4 +1,4 @@
-class Duck {
+class Duck2 {
   //les images du canard
   PImage duck1;
   PImage duck2;
@@ -28,14 +28,14 @@ class Duck {
   //
   float positionDuck = 0.0;
   
-  public Duck(int widthGame, int heightGame) 
+  public Duck2(int widthGame, int heightGame) 
   {
     //chargement des images du canard
-    this.duck1   = loadImage("src/img/duck_1.png");
-    this.duck2   = loadImage("src/img/duck_2.png");
-    this.duck3   = loadImage("src/img/duck_3.png");
-    this.duck4   = loadImage("src/img/duck_4.png");
-    this.duck5   = loadImage("src/img/duck_5.png");
+    this.duck1   = loadImage("src/img/duck_1_2.png");
+    this.duck2   = loadImage("src/img/duck_2_2.png");
+    this.duck3   = loadImage("src/img/duck_3_2.png");
+    this.duck4   = loadImage("src/img/duck_4_2.png");
+    this.duck5   = loadImage("src/img/duck_5_2.png");
     
     //initilisation du statut du canard
     this.dead = false;
@@ -52,7 +52,7 @@ class Duck {
   {
       if (!dead) {
         //incrémentation de la position du canard
-        positionDuck=positionDuck+0.003;
+        positionDuck=positionDuck+0.002;
           
         //calcul de la position du canard
         if (positionDuck < 1.0) {

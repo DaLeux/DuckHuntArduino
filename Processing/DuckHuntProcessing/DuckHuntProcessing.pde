@@ -23,7 +23,7 @@ int score = 0;
 
 //le canard
 Duck duck1;
-Duck duck2;
+Duck2 duck2;
 
 //le nunchuck
 Nunchuck nunchuck;
@@ -51,7 +51,7 @@ void setup() {
   
   //initialisation du canard 
   duck1 = new Duck(widthGame, heightGame);
-  duck2 = new Duck(widthGame, heightGame);
+  duck2 = new Duck2(widthGame, heightGame);
   
   //récupération du port serial à utiliser
   this.portName = Serial.list()[9];
@@ -71,15 +71,29 @@ void setup() {
 
 void draw() {
 
-
-  //affichage du fond d'écran
-  background(bg);
+  if ((playIntro) || (millis() < introTimerEnd)){
+    background(0);
+    text("DUCK HUNT", 420, 300);
+    image(loadImage("src/img/duck_1.png"), 450, 200);
+  } else {
+    background(bg);
+  }
   
-  if ((millis() < introTimerEnd) && (playIntro))  {
+  
+  if ((millis() < introTimerEnd) && (playIntro) && (serialPort.available() > 0))  {
     println("intro");
-
-
-  } else if (millis() >= introTimerEnd) {
+    serialPort.write(1);
+    playIntro = false;
+  } 
+  
+  else if ((millis() < introTimerEnd) && (playIntro))  {
+    introTimerEnd = millis()+2000;
+  } 
+  
+  else if (millis() >= introTimerEnd) {
+    //affichage du fond d'écran
+    
+  
     //lecture du port serie
     nunchuck.read();
     

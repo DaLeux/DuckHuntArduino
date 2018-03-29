@@ -36,10 +36,9 @@ class Nunchuck
     this.positionY = 0;
     
     if ( this.serialPort.available() <= 0) {
-      println("Erreur port serie");
       return;
-    } 
-
+    }
+    
     switch(this.serialPort.read() - CHAR_ZERO){
         case RESET_BUTTON:
           reset = true;
