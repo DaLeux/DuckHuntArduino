@@ -14,13 +14,8 @@ final int CHAR_ZERO = 48;
 
 class Nunchuck 
 {
-  //le numéro de port à utiliser
-  int serialPortNumber;
-  
   Serial serialPort;    // Create object from Serial class
-  String portName;
-  PApplet gameContext;
-  
+
   int positionX = 0;
   int positionY = 0;
   boolean shoot = false;
@@ -29,13 +24,9 @@ class Nunchuck
   int receivedValue = 0;
 
   
-  public Nunchuck(PApplet gameContext, int serialPortNumber) 
+  public Nunchuck(Serial serialPort) 
   {
-    this.serialPortNumber = serialPortNumber;
-    this.gameContext = gameContext;
-    
-    this.portName = Serial.list()[serialPortNumber];
-    this.serialPort = new Serial(gameContext, this.portName, 9600);
+    this.serialPort = serialPort;
   }
   
   public void read() {

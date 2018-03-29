@@ -23,10 +23,15 @@ int score = 0;
 
 //le canard
 Duck duck1;
+Duck duck2;
 
 //le nunchuck
 Nunchuck nunchuck;
 
+//communication serie
+Serial serialPort;    // Create object from Serial class
+String portName;
+  
 void setup() {
   //configuration de la zone d'affichage
   size(1000, 713);
@@ -42,20 +47,32 @@ void setup() {
   
   //initialisation du canard 
   duck1 = new Duck(widthGame, heightGame);
+  duck2 = new Duck(widthGame, heightGame);
   
+  //récupération du port serial à utiliser
+  portName = Serial.list()[9];
+  serialPort = new Serial(this, this.portName, 9600);
+    
   //initialisation du curseur et de sa position
-  nunchuck = new Nunchuck(this, 9);
+  nunchuck = new Nunchuck(serialPort);
   initializeCursor();
 }
 
 
 void draw() {
+  
+  serialPort.write("b");
+  
   //affichage du fond d'écran
   background(bg);
   
   //lecture du port serie
   nunchuck.read();
   
+  if (nunchuck.isReset()) {
+    initializeCursor();
+  }
+    
   curseurX += nunchuck.getX() * incrementX;
   curseurY += -nunchuck.getY() * incrementY;
   
@@ -64,17 +81,23 @@ void draw() {
   
   //déplacement du canard
   duck1.move();
+  duck2.move();
   
   //tentative de tir sur le canard
   if (nunchuck.isShooted()) {
     if (duck1.shoot(curseurX, curseurY)) {
       score += 100;
+      serialPort.write("s");
+    }
+    if (duck2.shoot(curseurX, curseurY)) {
+      score += 50;
+      serialPort.write("s");
     }
   }
   
   //affichage du canard
   duck1.display();
-  //duck2.display();
+  duck2.display();
   
   //affichage du score
   text("Score : ", widthGame - 250, heightGame - 10);
