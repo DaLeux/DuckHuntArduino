@@ -11,129 +11,134 @@
 #include <ArduinoNunchuk.h>
 #include <math.h> 
 
-#define BAUDRATE 9600
+const int BAUDRATE = 9600;
+const int BUZZER = 3;
+const int BUTTON_PIN = 2;
 
-int buzzer = 3;
+//Définitions des différentes notes (on se base sur les fréquences d'une guitares)
+int const NOTES_EE0  = 330;
+int const NOTES_EE1  = 349;
+int const NOTES_EE2  = 370;
+int const NOTES_EE3  = 392;
+int const NOTES_EE4  = 415;
+int const NOTES_EE5  = 440;
+int const NOTES_EE6  = 466;
+int const NOTES_EE7  = 494;
+int const NOTES_EE8  = 523;
+int const NOTES_EE9  = 554;
+int const NOTES_EE10 = 587;
 
-//notes
-int e0  = 330;
-int e1  = 349;
-int e2  = 370;
-int e3  = 392;
-int e4  = 415;
-int e5  = 440;
-int e6  = 466;
-int e7  = 494;
-int e8  = 523;
-int e9  = 554;
-int e10 = 587;
+int const NOTES_B0  = 247;
+int const NOTES_B1  = 262;
+int const NOTES_B2  = 277;
+int const NOTES_B3  = 294;
+int const NOTES_B4  = 311;
+int const NOTES_B5  = 330;
+int const NOTES_B6  = 349;
+int const NOTES_B7  = 370;
+int const NOTES_B8  = 392;
+int const NOTES_B9  = 415;
+int const NOTES_B10 = 440;
 
-int b0  = 247;
-int b1  = 262;
-int b2  = 277;
-int b3  = 294;
-int b4  = 311;
-int b5  = 330;
-int b6  = 349;
-int b7  = 370;
-int b8  = 392;
-int b9  = 415;
-int b10 = 440;
+int const NOTES_G0  = 196;
+int const NOTES_G1  = 208;
+int const NOTES_G2  = 220;
+int const NOTES_G3  = 233;
+int const NOTES_G4  = 247;
+int const NOTES_G5  = 262;
+int const NOTES_G6  = 277;
+int const NOTES_G7  = 294;
+int const NOTES_G8  = 311;
+int const NOTES_G9  = 330;
+int const NOTES_G10 = 349;
 
-int g0  = 196;
-int g1  = 208;
-int g2  = 220;
-int g3  = 233;
-int g4  = 247;
-int g5  = 262;
-int g6  = 277;
-int g7  = 294;
-int g8  = 311;
-int g9  = 330;
-int g10 = 349;
+int const NOTES_D0  = 147;
+int const NOTES_D1  = 156;
+int const NOTES_D2  = 165;
+int const NOTES_D3  = 175;
+int const NOTES_D4  = 185;
+int const NOTES_D5  = 196;
+int const NOTES_D6  = 208;
+int const NOTES_D7  = 220;
+int const NOTES_D8  = 233;
+int const NOTES_D9  = 247;
+int const NOTES_D10 = 262;
 
-int d0  = 147;
-int d1  = 156;
-int d2  = 165;
-int d3  = 175;
-int d4  = 185;
-int d5  = 196;
-int d6  = 208;
-int d7  = 220;
-int d8  = 233;
-int d9  = 247;
-int d10 = 262;
+int const NOTES_A0  = 110;
+int const NOTES_A1  = 117;
+int const NOTES_A2  = 123;
+int const NOTES_A3  = 131;
+int const NOTES_A4  = 139;
+int const NOTES_A5  = 147;
+int const NOTES_A6  = 156;
+int const NOTES_A7  = 165;
+int const NOTES_A8  = 175;
+int const NOTES_A9  = 185;
+int const NOTES_A10 = 196;
 
-int a0  = 110;
-int a1  = 117;
-int a2  = 123;
-int a3  = 131;
-int a4  = 139;
-int a5  = 147;
-int a6  = 156;
-int a7  = 165;
-int a8  = 175;
-int a9  = 185;
-int a10 = 196;
+int const NOTES_E0  = 82;
+int const NOTES_E1  = 87;
+int const NOTES_E2  = 92;
+int const NOTES_E3  = 98;
+int const NOTES_E4  = 104;
+int const NOTES_E5  = 110;
+int const NOTES_E6  = 117;
+int const NOTES_E7  = 123;
+int const NOTES_E8  = 131;
+int const NOTES_E9  = 139;
+int const NOTES_E10 = 147;
 
-int E0  = 82;
-int E1  = 87;
-int E2  = 92;
-int E3  = 98;
-int E4  = 104;
-int E5  = 110;
-int E6  = 117;
-int E7  = 123;
-int E8  = 131;
-int E9  = 139;
-int E10 = 147;
+//Durée des notes
+int const DURATION_EIGHTH   = 50;
+int const DURATION_QUARTER  = 100;
+int const DURATION_HALF     = 200;
+int const DURATION_WHOLE    = 400;
 
-int eighth  = 50;
-int quarter = 100;
-int half    = 200;
-int whole   = 400;
+//définitions des musiques
+int introSong[]     = { NOTES_EE4, NOTES_EE4, NOTES_EE3, NOTES_EE2, NOTES_EE1, NOTES_B5, NOTES_B6 };
+int introDuration[] = { DURATION_QUARTER, DURATION_QUARTER,  DURATION_QUARTER,  DURATION_HALF,   DURATION_QUARTER, DURATION_WHOLE, DURATION_HALF };
+int fallSong[]      = { NOTES_EE10, NOTES_EE9, NOTES_EE8, NOTES_EE7, NOTES_EE6, NOTES_EE5, NOTES_EE1 };
+int shootSong[]     = { NOTES_EE0, NOTES_A0, NOTES_D0, NOTES_G0, NOTES_B0, NOTES_E0 };
 
-int introSong[]     = {e4,      e4,       e3,       e2,     e1,     b5,     b6  };
-int introDuration[] = {quarter, quarter,  quarter,  half,   quarter, whole, half };
-
-int fallSong[]     = {e10,      e9,       e8,       e7,     e6,     e5, e1};
-
-int shootSong[]     = {E0, a0, d0, g0, b0, e0};
-
+//boolean indiquant quelle musique jouer
 boolean playIntro = false;
 boolean playFall = false;
 boolean playShoot = false;
 
-
-const int RESET_BUTTON = 0;
-const int UP = 1;
-const int UP_RIGHT = 2;
-const int RIGHT = 3;
-const int DOWN_RIGHT = 4;
-const int DOWN = 5;
-const int DOWN_LEFT = 6;
+//Les différentes signaux que peux envoyer le nunchuck
+const int RESET_BUTTON  = 0;
+const int UP            = 1;
+const int UP_RIGHT      = 2;
+const int RIGHT         = 3;
+const int DOWN_RIGHT    = 4;
+const int DOWN          = 5;
+const int DOWN_LEFT     = 6;
 const int LEFT = 7;
-const int UP_LEFT = 8;
-const int SHOT_BUTTON = 9;
+const int UP_LEFT       = 8;
+const int SHOT_BUTTON   = 9;
 
-const int NEUTRAL_NUNCHUK_X = 122;
-const int NEUTRAL_NUNCHUK_Y = 127;
+//la valeur au repos du nunchuck
+const int NEUTRAL_NUNCHUK_X   = 122;
+const int NEUTRAL_NUNCHUK_Y   = 127;
 
+//le déplacement nécessaire validant le déplacement au nunchuck
 const int MIN_DETECTION_RANGE = 10;
 
-const int UP_ANGLE = 90;
-const int RIGHT_ANGLE = 0;
-const int DOWN_ANGLE = -90;
-const int LEFT_ANGLE_POSTIVE = 180;
+//définition des angles permettant de savoir la direction du nunchuck
+const int UP_ANGLE            = 90;
+const int RIGHT_ANGLE         = 0;
+const int DOWN_ANGLE          = -90;
+const int LEFT_ANGLE_POSTIVE  = 180;
 const int LEFT_ANGLE_NEGATIVE = -180;
 
+//définition de l'angle permettant de savoir si une zone UP, DOWN, LEFT ou RIGHT ou les variantes entre deux positions
 const int ANGLE_PERIMETER = 20;
 
-int buttonPin = 2;
-int lastButtonState = 0;
-unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 50;
-bool panic = false;
+//Variables utilisées pour la gestion du mode panic
+int lastButtonState             = 0;
+unsigned long lastDebounceTime  = 0;
+unsigned long debounceDelay     = 50;
+bool panic                      = false;
 int buttonState;
 
 ArduinoNunchuk nunchuk = ArduinoNunchuk();
@@ -142,7 +147,7 @@ void setup()
 {
   Serial.begin(BAUDRATE);
   nunchuk.init();
-  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 }
 
 void loop()
@@ -150,7 +155,7 @@ void loop()
   //mise à jour des données en provenance du nunchuck
   nunchuk.update();
 
-  int reading = digitalRead(buttonPin)?false:true;
+  int reading = digitalRead(BUTTON_PIN)?false:true;
 
   if (reading != lastButtonState) {
     lastDebounceTime = millis();
@@ -178,32 +183,32 @@ void loop()
 void sound() {
   if (playIntro) {
     for (int i = 0; i < sizeof(introSong); i++) {
-      tone(buzzer, introSong[i], introDuration[i]);
+      tone(BUZZER, introSong[i], introDuration[i]);
       delay(introDuration[i]*1.1);
     }
-    tone(buzzer, 0, 10);
+    tone(BUZZER, 0, 10);
     playIntro = false;
   }
   
   if (playFall) {
     for (int i = 0; i < sizeof(fallSong); i++) {
-      tone(buzzer, fallSong[i], 30);
+      tone(BUZZER, fallSong[i], 30);
       delay(30);
     }
-    tone(buzzer, 0, 10);
+    tone(BUZZER, 0, 10);
     playFall = false;
   }
   
   if (playShoot) {
     for (int i = 0; i < sizeof(shootSong); i++) {
-      tone(buzzer, shootSong[i], 10);
+      tone(BUZZER, shootSong[i], 10);
       delay(10);
     }
     playShoot = false;
   }
 
   if ((!playFall) && (!playIntro) && (!playShoot)) {
-    tone(buzzer, 0, 1);
+    tone(BUZZER, 0, 1);
     delay(1);
   }
 }
@@ -335,17 +340,7 @@ void logData() {
   Serial.print(nunchuk.analogX, DEC);
   Serial.print(", Y : ");
   Serial.print(nunchuk.analogY, DEC);
-  Serial.println();
-  /*Serial.print(nunchuk.accelX, DEC);
-  Serial.print(' ');
-  Serial.print(nunchuk.accelY, DEC);
-  Serial.print(' ');
-  Serial.print(nunchuk.accelZ, DEC);
-  Serial.print(' ');
-  Serial.print(nunchuk.zButton, DEC);
-  Serial.print(' ');
-  Serial.println(nunchuk.cButton, DEC);*/
-  
+  Serial.println();  
 }
 
 
