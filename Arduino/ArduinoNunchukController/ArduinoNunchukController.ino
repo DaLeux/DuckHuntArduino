@@ -100,10 +100,15 @@ int introDuration[] = { DURATION_QUARTER, DURATION_QUARTER,  DURATION_QUARTER,  
 int fallSong[]      = { NOTES_EE10, NOTES_EE9, NOTES_EE8, NOTES_EE7, NOTES_EE6, NOTES_EE5, NOTES_EE1 };
 int shootSong[]     = { NOTES_EE0, NOTES_A0, NOTES_D0, NOTES_G0, NOTES_B0, NOTES_E0 };
 
+
 //boolean indiquant quelle musique jouer
 boolean playIntro = false;
 boolean playFall = false;
 boolean playShoot = false;
+
+//Pour l'introduction la musique étant longue et pouvant provoquer des problèmes de synchro, on lit la musique avec un timer
+int timerIntro = -1;
+int notePositionIntro = 0;
 
 //Les différentes signaux que peux envoyer le nunchuck
 const int RESET_BUTTON  = 0;
@@ -141,6 +146,7 @@ unsigned long debounceDelay     = 50;
 bool panic                      = false;
 int buttonState;
 
+//instanciation du Nunchuck
 ArduinoNunchuk nunchuk = ArduinoNunchuk();
 
 void setup()
@@ -191,26 +197,43 @@ void readPanic() {
   lastButtonState = reading;
 }
 
-//Fonction permettant de jouer de la musique
+/* 
+ *  Fonction permettant de jouer de la musique
+ *  Afin d'éviter que le sont gène l'envoie des données sur le port serie, on n'utilise pas de delay mais un timer
+ */
 void playSound() {
 
   //musique d'introduction
   if (playIntro) {
-    for (int i = 0; i < sizeof(introSong); i++) {
-      tone(BUZZER, introSong[i], introDuration[i]);
-      delay(introDuration[i]*1.1);
+    //si il c'est la première fois que l'on doit jouer la prochaine note
+    if ( (timerIntro == -1) || ((millis() > timerIntro) && (notePositionIntro < sizeof(introSong))) ) {
+      //incrémentation du timer de la durée de la note
+      timerIntro = millis() + introDuration[notePositionIntro];
+      //lecture du son
+      tone(BUZZER, introSong[notePositionIntro]);
+      //on incrémente la prochaine note à jouer
+      notePositionIntro ++;
     }
-    tone(BUZZER, 0, 10);
-    playIntro = false;
+    
+    //lecture du son en cours
+    else if (millis() <= timerIntro) {
+      tone(BUZZER, introSong[notePositionIntro-1]);
+    }
+    
+    //fin de la musique
+    else {
+      timerIntro = -1;
+      playIntro = false;
+      notePositionIntro = 0;
+    }
   }
 
   //musique de la chute du canard
   if (playFall) {
     for (int i = 0; i < sizeof(fallSong); i++) {
-      tone(BUZZER, fallSong[i], 30);
-      delay(30);
+      tone(BUZZER, fallSong[i], 20);
+      delay(20);
     }
-    tone(BUZZER, 0, 10);
     playFall = false;
   }
 
@@ -226,7 +249,7 @@ void playSound() {
   //s'il n'y a aucun son, on envoit rien (on évite les bruits parasites)
   if ((!playFall) && (!playIntro) && (!playShoot)) {
     tone(BUZZER, 0, 1);
-    delay(1);
+
   }
 }
 

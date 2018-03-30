@@ -20,6 +20,7 @@ int curseurY;
 
 //le score;
 int score = 0;
+int maxScore = 0;
 
 //le canard
 Duck duck1;
@@ -71,28 +72,26 @@ void setup() {
 
 void draw() {
 
-  if ((playIntro) || (millis() < introTimerEnd)){
-    background(0);
-    text("DUCK HUNT", 420, 300);
-    image(loadImage("src/img/duck_1.png"), 450, 200);
-  } else {
-    background(bg);
-  }
   
-  
-  if ((millis() < introTimerEnd) && (playIntro) && (serialPort.available() > 0))  {
+  if ((playIntro) && (serialPort.available() > 0))  {
     println("intro");
     serialPort.write(1);
     playIntro = false;
+    duck1.initDuckPosition();
+    duck2.initDuckPosition();
+    
+    showIntro();
+    
   } 
   
-  else if ((millis() < introTimerEnd) && (playIntro))  {
+  else if (playIntro) {
     introTimerEnd = millis()+2000;
+    showIntro();
   } 
   
   else if (millis() >= introTimerEnd) {
     //affichage du fond d'écran
-    
+     background(bg);
   
     //lecture du port serie
     nunchuck.read();
@@ -110,6 +109,22 @@ void draw() {
     //déplacement du canard
     duck1.move();
     duck2.move();
+
+    if ((duck1.isOut()) || (duck2.isOut())){
+      //playIntro = true;
+      
+      if (score > maxScore) {
+        maxScore = score;
+      }
+
+      duck1.initDuckPosition();
+      duck2.initDuckPosition();
+      score = 0;
+      
+      serialPort.write(1);
+      
+    }
+      
     
     //tentative de tir sur le canard
     if (nunchuck.isShooted()) {
@@ -128,9 +143,20 @@ void draw() {
     duck2.display();
     
     //affichage du score
-    text("Score : ", widthGame - 250, heightGame - 10);
-    text(score, widthGame - 100, heightGame - 10);
+    fill(0, 102, 153);
+    textAlign(LEFT);
+    text("Max score : "+ maxScore , 150, 50);
+    textAlign(RIGHT);
+    text("Votre score : "+score, 850, 50);
+
   }
+}
+
+void showIntro () {
+    background(0);
+    textAlign(CENTER);
+    text("DUCK HUNT", 500, 300);
+    image(loadImage("src/img/duck_1.png"), 450, 200);
 }
 
 void initializeCursor() {

@@ -12,6 +12,7 @@ class Duck2 {
     
   //information sur son état
   boolean dead;
+  boolean out;
   
   //position du canard
   int duckInitialeY = 0;
@@ -39,6 +40,7 @@ class Duck2 {
     
     //initilisation du statut du canard
     this.dead = false;
+    this.out = false;
     
     //initialisation de la position du canard
     initDuckPosition();
@@ -59,7 +61,8 @@ class Duck2 {
           duckX = (int)(positionDuck * ((float) widthGame));
           duckY = (int) (duckInitialeY + (pow(positionDuck, 4) * (duckFinaleY-duckInitialeY)));
         } else {
-          initDuckPosition();
+          out = true;
+          
           duckSpriteCounter = 0;
         }
         //incrépentation du compteur de sprite
@@ -127,6 +130,7 @@ class Duck2 {
       duckInitialeY  = getRandomPosition()+25;
       duckFinaleY    = getRandomPosition()+25; 
       positionDuck   = 0;
+      out = false;
     }
     
     int getRandomPosition() {
@@ -142,5 +146,9 @@ class Duck2 {
         return true;
       }
       return false;
+    }
+    
+    public boolean isOut() {
+      return out;
     }
 }
