@@ -155,8 +155,26 @@ void loop()
   //mise à jour des données en provenance du nunchuck
   nunchuk.update();
 
+  //lecture du bouton de panic
+  readPanic();
+
+  //envoie du message de la position du nunchuck (si besoin). Si panic est à true, on envoi un signal inversé
+  sendNunchukDirection(panic);
+
+  //envoie du message du bouton pressé (si besoin)
+  sendNunchukButton();
+
+  //lecture du port serie et lecture du son s'il y a une demande
+  readIncommingData();
+  playSound();
+}
+
+//fonction permettant de déterminer si on a appuyé sur le joystick ou pas
+void readPanic() {
+  //Lecture du bouton de panic
   int reading = digitalRead(BUTTON_PIN)?false:true;
 
+  //si on a eu une modification de l'état du bouton
   if (reading != lastButtonState) {
     lastDebounceTime = millis();
   }
@@ -169,18 +187,14 @@ void loop()
       }
     }
   }
+  //enregistrement du dernier etat du bouton
   lastButtonState = reading;
-
-  sendNunchukDirection(panic);
-  sendNunchukButton();
-
-  readIncommingData();
-  sound();
 }
 
+//Fonction permettant de jouer de la musique
+void playSound() {
 
-
-void sound() {
+  //musique d'introduction
   if (playIntro) {
     for (int i = 0; i < sizeof(introSong); i++) {
       tone(BUZZER, introSong[i], introDuration[i]);
@@ -189,7 +203,8 @@ void sound() {
     tone(BUZZER, 0, 10);
     playIntro = false;
   }
-  
+
+  //musique de la chute du canard
   if (playFall) {
     for (int i = 0; i < sizeof(fallSong); i++) {
       tone(BUZZER, fallSong[i], 30);
@@ -198,7 +213,8 @@ void sound() {
     tone(BUZZER, 0, 10);
     playFall = false;
   }
-  
+
+  //musique du tir
   if (playShoot) {
     for (int i = 0; i < sizeof(shootSong); i++) {
       tone(BUZZER, shootSong[i], 10);
@@ -207,48 +223,65 @@ void sound() {
     playShoot = false;
   }
 
+  //s'il n'y a aucun son, on envoit rien (on évite les bruits parasites)
   if ((!playFall) && (!playIntro) && (!playShoot)) {
     tone(BUZZER, 0, 1);
     delay(1);
   }
 }
 
+//fonction permettant de lire des informations reçues sur le port serie
 void readIncommingData()
 {
+  //lecture uniquement quand le port serie est disponible
   if(Serial.available()){
     int receivedValue = Serial.read();
+
+    //réception d'une demande de lecture de l'introduction
     if (receivedValue == 1) {
       playIntro = true;
-    } else if (receivedValue == 2)  {
+    } 
+    //réception d'une demande de lecture de chute de canard
+    else if (receivedValue == 2)  {
       playFall = true;
     }
     
   }
 }
 
+//fonction permettant d'envoyer des commandes sur le port serie
 void sendNunchukButton() {
+
+  //Boutton de tir (Z)
   if(nunchuk.zButton == 1) {
     Serial.print(SHOT_BUTTON);
     playShoot = true;
   }
 
+  //Boutton réinitialisation du curseur (C)
   if(nunchuk.cButton == 1) {
     Serial.print(RESET_BUTTON);
   }
 }
 
+//fonction permettant de lire les commandesdu nunchuck
 void sendNunchukDirection(boolean panic) { 
-
+  
+  //récupération de position du joystick
   int analogX = nunchuk.analogX;
   int analogY = nunchuk.analogY;
 
+  //suppression de la valeur neutre du joystick
   int deltaX = analogX - NEUTRAL_NUNCHUK_X;
   int deltaY = analogY - NEUTRAL_NUNCHUK_Y;
-  
+
+  //calcul de la distance de déplacement du joystick
   int distance = getDistance(deltaX, deltaY);
 
+  //si la distance effectuée est faible (parasite ou pas assez représentative) on gère le déplacement
   if(distance > MIN_DETECTION_RANGE){
 
+    //calcul de l'angle du joystick
     double angle = getAngle(deltaX, deltaY);
 
     // UP
@@ -294,47 +327,57 @@ void sendNunchukDirection(boolean panic) {
   }
   
 }
-
+//fonction permettant de calculer la distance du joystick
 double getDistance(int deltaX, int deltaY){
   return pow(square(deltaX) + square(deltaY), 0.5);
 }
 
+//fonction permettant de récupérer l'angle du joystick
 double getAngle(int deltaX, int deltaY){
   return atan2(deltaY,deltaX) * 180 / PI;
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers UP
 boolean isUpPosition(double angle){
   return (angle <= UP_ANGLE + ANGLE_PERIMETER) && (angle >= UP_ANGLE - ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers UP_RIGHT
 boolean isUpRightPosition(double angle){
   return (angle <= UP_ANGLE - ANGLE_PERIMETER) && (angle >= RIGHT_ANGLE + ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers RIGHT
 boolean isRightPosition(double angle){
   return (angle <= RIGHT_ANGLE + ANGLE_PERIMETER) && (angle >= RIGHT_ANGLE - ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers DOWN_RIGHT
 boolean isDownRightPosition(double angle){
   return (angle <= RIGHT_ANGLE - ANGLE_PERIMETER) && (angle >= DOWN_ANGLE + ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers DOWN
 boolean isDownPosition(double angle){
   return (angle <= DOWN_ANGLE + ANGLE_PERIMETER) && (angle >= DOWN_ANGLE - ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers DOWN_LEFT
 boolean isDownLeftPosition(double angle){
   return (angle <= DOWN_ANGLE - ANGLE_PERIMETER) && (angle >= LEFT_ANGLE_NEGATIVE + ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers LEFT
 boolean isLeftPosition(double angle){
   return (angle <= LEFT_ANGLE_POSTIVE + ANGLE_PERIMETER) && (angle >= LEFT_ANGLE_NEGATIVE - ANGLE_PERIMETER);
 }
 
+//fonction permettant de savoir si le joystick est dirigé vers UP_LEFT
 boolean isUpLeftPosition(double angle){
   return (angle <= LEFT_ANGLE_POSTIVE - ANGLE_PERIMETER) && (angle >= UP_ANGLE + ANGLE_PERIMETER);
 }
 
+//fonction de débugage
 void logData() {
   Serial.print("X : ");
   Serial.print(nunchuk.analogX, DEC);
