@@ -9,3 +9,5 @@ DuckHunter game running on processing (https://processing.org/) controlled with 
 Install ArduinoNunchuk library :  https://github.com/GabrielBianconi/arduino-nunchuk
 
 Nunchuk setup : https://create.arduino.cc/projecthub/infusion/using-a-wii-nunchuk-with-arduino-597254
+
+![Arduino setup](https://github.com/DaLeux/DuckHuntArduino/blob/master/Images/DuckHuntFritzing_bb.png)
